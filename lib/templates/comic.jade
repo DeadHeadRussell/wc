@@ -1,0 +1,10 @@
+html
+  body
+    p= comic.title
+    - if (chapter)
+      a(href='/chapter/' + chapter.id)= chapter.title
+
+    img(src='/images/comics/' + comic.id)
+
+    p= comic.description
+    p= comic.tags

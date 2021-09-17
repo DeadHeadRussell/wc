@@ -1,0 +1,128 @@
+style.
+  img {
+    width: 400px;
+  }
+
+div
+  p Create chapter
+  form#chForm
+    label Title
+      input#chTitle
+    label Description
+      textarea#chDescription
+    label Tags
+      input#chTags
+    button Create
+
+div
+  p Upload comic
+  form#coForm
+    label Title
+      input#coTitle
+    label Chapter
+      select#coChapter
+    label Description
+      textarea#coDescription
+    label Tags
+      input#coTags
+    label Image
+      input#coImage(type='file')
+    button Create
+
+p comics
+div#comics
+p chapters
+div#chapters
+
+script.
+  document.getElementById('chForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var data = {
+      title: document.getElementById('chTitle').value,
+      description: document.getElementById('chDescription').value,
+      tags: document.getElementById('chTags').value
+    };
+
+    var req = new XMLHttpRequest();
+    req.open('POST', '/admin/chapter');
+    req.setRequestHeader('Content-Type', 'application/json');
+    req.send(JSON.stringify(data));
+    req.addEventListener('load', function() {
+      var res = JSON.parse(req.responseText);
+      data.id = res.id;
+      loadChapters();
+    });
+
+    req.addEventListener('error', function(e) {
+      console.error('chapter error', e);
+    });
+  });
+
+  document.getElementById('coForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var formData = new FormData();
+    formData.append('title', document.getElementById('coTitle').value);
+    formData.append('chapter', document.getElementById('coChapter').value);
+    formData.append('description', document.getElementById('coDescription').value);
+    formData.append('tags', document.getElementById('coTags').value);
+
+    var file = document.getElementById('coImage').files[0];
+    formData.append('image', file, file.name);
+
+    var req = new XMLHttpRequest();
+    req.open('POST', '/admin/comic');
+    req.send(formData);
+    req.addEventListener('load', function() {
+      loadComics();
+    });
+
+    req.addEventListener('error', function(e) {
+      console.error('comic error', e);
+    });
+  });
+
+  loadComics();
+  loadChapters();
+
+  function loadComics() {
+    var req = new XMLHttpRequest();
+    req.open('GET', '/admin/comics');
+    req.send();
+    req.addEventListener('load', function() {
+      var res = JSON.parse(req.responseText);
+      document.getElementById('comics').innerHTML = '';
+      res.comics.forEach(function(comic) {
+        var comicElem = document.createElement('p');
+        comicElem.innerText = comic.title + ' | ' + comic.chapter;
+        var comicImg = document.createElement('img');
+        comicImg.src = '/images/comics/' + comic.id;
+        document.getElementById('comics').appendChild(comicElem);
+        document.getElementById('comics').appendChild(comicImg);
+      });
+    });
+  }
+
+  function loadChapters() {
+    var req = new XMLHttpRequest();
+    req.open('GET', '/admin/chapters');
+    req.send();
+    req.addEventListener('load', function() {
+      var res = JSON.parse(req.responseText);
+
+      document.getElementById('chapters').innerHTML = '';
+      document.getElementById('coChapter').innerHTML = '';
+      res.chapters.forEach(function(chapter) {
+        var chapterElem = document.createElement('p');
+        chapterElem.innerText = chapter.title;
+        document.getElementById('chapters').appendChild(chapterElem);
+
+        var option = document.createElement('option');
+        option.value = chapter.id;
+        option.innerText = chapter.title;
+        document.getElementById('coChapter').appendChild(option);
+      });
+    });
+  }
+

@@ -1,0 +1,10 @@
+html
+  body
+    p= chapter.title
+    p= chapter.description
+    p= chapter.tags
+
+    - for (var i = 0; i < comics.length; i++)
+      - var comic = comics[i]
+      a(href='/comics/' + comic.id)= comic.title
+
